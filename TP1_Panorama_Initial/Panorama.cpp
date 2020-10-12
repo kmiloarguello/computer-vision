@@ -1,7 +1,8 @@
 // Imagine++ project
 // Project:  Panorama
 // Author:   Pascal Monasse
-// Date:     2013/10/08
+// Edited by: Camillo ARGUELLO
+// Date:     2013/10/08 -> 2020/10
 
 #include <Imagine/Graphics.h>
 #include <Imagine/Images.h>
@@ -14,7 +15,35 @@ using namespace std;
 // Record clicks in two images, until right button click
 void getClicks(Window w1, Window w2,
                vector<IntPoint2>& pts1, vector<IntPoint2>& pts2) {
-    // ------------- TODO/A completer ----------
+
+    cout << "Left button click to check points of interest" << endl;
+    cout << "Right button click to finish." << endl;
+
+
+
+    int buttonClicked = 0,  // Stores the value of btn clicked
+            subWindow = 0;  // Stores the subwindow value (this is not updated)
+    IntPoint2 pos;          // Current position
+    Window currentWindow;   // Current Window
+
+    // Events
+    // Left click -> {Integer} 1
+    // Scroll click -> {Integer} 2
+    // Right click -> {Integer} 3
+
+    while(buttonClicked != 3)
+    {
+        buttonClicked = anyGetMouse(pos, currentWindow, subWindow);
+        cout << "The position is " << pos << " And the button selected is: " << buttonClicked << " " << endl;
+
+        if(buttonClicked == 1 && currentWindow == w1 ){
+            pts1.push_back(pos);
+        }else if(buttonClicked == 1 && currentWindow == w2) {
+            pts2.push_back(pos);
+        } else {
+            cout << "This window should not get click events." << endl;
+        }
+    }
 }
 
 // Return homography compatible with point matches
