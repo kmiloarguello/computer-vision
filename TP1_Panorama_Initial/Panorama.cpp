@@ -28,6 +28,8 @@ void getClicks(Window w1, Window w2,
     // Scroll click -> {Integer} 2
     // Right click -> {Integer} 3
 
+    cout << "First window... " << endl;
+
     // Window 1
     setActiveWindow(w1);
     while(buttonClickedW1 != 3) {
@@ -39,7 +41,7 @@ void getClicks(Window w1, Window w2,
         }
     }
 
-    if(buttonClickedW1 == 3) closeWindow(w1);
+    cout << "Second window... " << endl;
 
     // Window 2
     setActiveWindow(w2);
@@ -51,7 +53,6 @@ void getClicks(Window w1, Window w2,
             drawCircle(pos, 7,GREEN,3);
         }
     }
-    if(buttonClickedW2 == 3) closeWindow(w2);
 
 }
 
@@ -63,29 +64,28 @@ Matrix<float> getHomography(const vector<IntPoint2>& pts1,
         cout << "Not enough correspondences: " << n << endl;
         return Matrix<float>::Identity(3);
     }
-    Matrix<double> A(2*n,8);
-    Vector<double> B(2*n);
+    Matrix<double> A(2 * n, 8);
+    Vector<double> B(2 * n);
+    for (size_t i = 0; i < n; i++) {
+        B[2 * i] = pts2[i].x();
+        B[2 * i + 1] = pts2[i].y();
 
-    for(size_t i=0; i < n; i++) {
-        A(2*i,0)=pts1[i].x();
-        A(2*i,1)=pts1[i].y();
-        A(2*i,2)=1;
-        A(2*i,3)=0;
-        A(2*i,4)=0;
-        A(2*i,5)=0;
-        A(2*i,6)=-pts2[i].x()*pts1[i].x();
-        A(2*i,7)=-pts2[i].x()*pts1[i].y();
-        A(2*i+1,0)=0;
-        A(2*i+1,1)=0;
-        A(2*i+1,2)=0;
-        A(2*i+1,3)=pts1[i].x();
-        A(2*i+1,4)=pts1[i].y();
-        A(2*i+1,5)=1;
-        A(2*i+1,6)=-pts2[i].y()*pts1[i].x();
-        A(2*i+1,7)=-pts2[i].y()*pts1[i].y();
-
-        B[2*i] = pts2[i].x();
-        B[2*i+1] =pts2[i].y();
+        A(2 * i, 0) = pts1[i].x();
+        A(2 * i, 1) = pts1[i].y();
+        A(2 * i, 2) = 1;
+        A(2 * i, 3) = 0;
+        A(2 * i, 4) = 0;
+        A(2 * i, 5) = 0;
+        A(2 * i, 6) = -pts1[i].x() * pts2[i].x();
+        A(2 * i, 7) = -pts2[i].x() * pts1[i].y();
+        A(2 * i + 1, 0) = 0;
+        A(2 * i + 1, 1) = 0;
+        A(2 * i + 1, 2) = 0;
+        A(2 * i + 1, 3) = pts1[i].x();
+        A(2 * i + 1, 4) = pts1[i].y();
+        A(2 * i + 1, 5) = 1;
+        A(2 * i + 1, 6) = -pts1[i].x() * pts2[i].y();
+        A(2 * i + 1, 7) = -pts2[i].y() * pts1[i].y();
     }
 
     B = linSolve(A, B);
@@ -140,11 +140,8 @@ void panorama(const Image<Color,2>& I1, const Image<Color,2>& I2,
 
     cout << "x0 x1 y0 y1=" << x0 << ' ' << x1 << ' ' << y0 << ' ' << y1<<endl;
 
-    Image<Color> I(int(x1-x0), int(y1-y0));
-    setActiveWindow( openWindow(I.width(), I.height()) );
-    I.fill(WHITE);
-    // ------------- TODO/A completer ----------
-    display(I,0,0);
+    Image<Color> I(int(x1 - x0), int(y1 - y0));
+    display(I, 0, 0);
 }
 
 // Main function
@@ -187,3 +184,4 @@ int main(int argc, char* argv[]) {
     endGraphics();
     return 0;
 }
+
