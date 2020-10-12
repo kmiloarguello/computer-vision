@@ -67,6 +67,25 @@ Matrix<float> getHomography(const vector<IntPoint2>& pts1,
     Vector<double> B(2*n);
 
     for(size_t i=0; i < n; i++) {
+        A(2*i,0)=pts1[i].x();
+        A(2*i,1)=pts1[i].y();
+        A(2*i,2)=1;
+        A(2*i,3)=0;
+        A(2*i,4)=0;
+        A(2*i,5)=0;
+        A(2*i,6)=-pts2[i].x()*pts1[i].x();
+        A(2*i,7)=-pts2[i].x()*pts1[i].y();
+        A(2*i+1,0)=0;
+        A(2*i+1,1)=0;
+        A(2*i+1,2)=0;
+        A(2*i+1,3)=pts1[i].x();
+        A(2*i+1,4)=pts1[i].y();
+        A(2*i+1,5)=1;
+        A(2*i+1,6)=-pts2[i].y()*pts1[i].x();
+        A(2*i+1,7)=-pts2[i].y()*pts1[i].y();
+
+        B[2*i] = pts2[i].x();
+        B[2*i+1] =pts2[i].y();
     }
 
     B = linSolve(A, B);
@@ -94,7 +113,7 @@ void growTo(float& x0, float& y0, float& x1, float& y1, float x, float y) {
     if(x<x0) x0=x;
     if(x>x1) x1=x;
     if(y<y0) y0=y;
-    if(y>y1) y1=y;    
+    if(y>y1) y1=y;
 }
 
 // Panorama construction
@@ -159,11 +178,11 @@ int main(int argc, char* argv[]) {
         cout << *it << endl;
 
     // Compute homography
-    //Matrix<float> H = getHomography(pts1, pts2);
-    //cout << "H=" << H/H(2,2);
+    Matrix<float> H = getHomography(pts1, pts2);
+    cout << "H=" << H/H(2,2);
 
     // Apply homography
-    //panorama(I1, I2, H);
+    panorama(I1, I2, H);
 
     endGraphics();
     return 0;
