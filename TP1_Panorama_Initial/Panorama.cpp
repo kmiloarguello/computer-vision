@@ -19,44 +19,55 @@ void getClicks(Window w1, Window w2,
     cout << "Left button click to check points of interest" << endl;
     cout << "Right button click to finish." << endl;
 
-
-
-    int buttonClicked = 0,  // Stores the value of btn clicked
-            subWindow = 0;  // Stores the subwindow value (this is not updated)
+    int buttonClickedW1 = 0,  // Stores the value of btn clicked
+        buttonClickedW2 = 0;
     IntPoint2 pos;          // Current position
-    Window currentWindow;   // Current Window
 
     // Events
     // Left click -> {Integer} 1
     // Scroll click -> {Integer} 2
     // Right click -> {Integer} 3
 
-    while(buttonClicked != 3)
-    {
-        buttonClicked = anyGetMouse(pos, currentWindow, subWindow);
-        cout << "The position is " << pos << " And the button selected is: " << buttonClicked << " " << endl;
+    // Window 1
+    setActiveWindow(w1);
+    while(buttonClickedW1 != 3) {
+        buttonClickedW1  = getMouse(pos);
 
-        if(buttonClicked == 1 && currentWindow == w1 ){
+        if (buttonClickedW1 == 1) {
             pts1.push_back(pos);
-        }else if(buttonClicked == 1 && currentWindow == w2) {
-            pts2.push_back(pos);
-        } else {
-            cout << "This window should not get click events." << endl;
+            drawCircle(pos, 7,GREEN,3);
         }
     }
+
+    if(buttonClickedW1 == 3) closeWindow(w1);
+
+    // Window 2
+    setActiveWindow(w2);
+    while(buttonClickedW2 != 3) {
+        buttonClickedW2  = getMouse(pos);
+
+        if (buttonClickedW2 == 1) {
+            pts2.push_back(pos);
+            drawCircle(pos, 7,GREEN,3);
+        }
+    }
+    if(buttonClickedW2 == 3) closeWindow(w2);
+
 }
 
 // Return homography compatible with point matches
 Matrix<float> getHomography(const vector<IntPoint2>& pts1,
                             const vector<IntPoint2>& pts2) {
     size_t n = min(pts1.size(), pts2.size());
-    if(n<4) {
+    if(n < 4) {
         cout << "Not enough correspondences: " << n << endl;
         return Matrix<float>::Identity(3);
     }
     Matrix<double> A(2*n,8);
     Vector<double> B(2*n);
-    // ------------- TODO/A completer ----------
+
+    for(size_t i=0; i < n; i++) {
+    }
 
     B = linSolve(A, B);
     Matrix<float> H(3, 3);
@@ -148,11 +159,11 @@ int main(int argc, char* argv[]) {
         cout << *it << endl;
 
     // Compute homography
-    Matrix<float> H = getHomography(pts1, pts2);
-    cout << "H=" << H/H(2,2);
+    //Matrix<float> H = getHomography(pts1, pts2);
+    //cout << "H=" << H/H(2,2);
 
     // Apply homography
-    panorama(I1, I2, H);
+    //panorama(I1, I2, H);
 
     endGraphics();
     return 0;
