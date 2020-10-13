@@ -153,8 +153,6 @@ void panorama(const Image<Color,2>& I1, const Image<Color,2>& I2,
             v[1] = i + y0; 
             v[2] = 1;
 
-            bool in=(v[0] >=0 && v[0] < I2.width() && v[1] >= 0 && v[1] < I2.height());
-            
             // Right side
             if(v[0] >=0 && v[0] < I2.width() && v[1] >= 0 && v[1] < I2.height()) {
                 // Interpolate with pixels of Image 2
