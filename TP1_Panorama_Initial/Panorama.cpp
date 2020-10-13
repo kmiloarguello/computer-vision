@@ -141,7 +141,46 @@ void panorama(const Image<Color,2>& I1, const Image<Color,2>& I2,
     cout << "x0 x1 y0 y1=" << x0 << ' ' << x1 << ' ' << y0 << ' ' << y1<<endl;
 
     Image<Color> I(int(x1 - x0), int(y1 - y0));
-    display(I, 0, 0);
+    setActiveWindow( openWindow(I.width(), I.height()) );
+    I.fill(WHITE);
+
+    H = inverse(H);
+    
+    for(int i=0; i<I.height(); i++) {
+        for(int j=0; j<I.width(); j++) {
+
+            v[0] = j + x0; 
+            v[1] = i + y0; 
+            v[2] = 1;
+
+            bool in=(v[0] >=0 && v[0] < I2.width() && v[1] >= 0 && v[1] < I2.height());
+            
+            // Right side
+            if(v[0] >=0 && v[0] < I2.width() && v[1] >= 0 && v[1] < I2.height()) {
+                // Interpolate with pixels of Image 2
+                I(j,i) = I2.interpolate(v[0],v[1]);
+            }
+
+            v = H * v;
+            v /= v[2];
+
+            // Left side
+            if(v[0] >= 0 && v[0] < I1.width() && v[1] >= 0 && v[1] < I1.height()) {
+                
+                // Overlaping
+                if(v[0] >=0 && v[0] < I2.width() && v[1] >= 0 && v[1] < I2.height()) {
+                    Color c = I1.interpolate(v[0],v[1]);
+                    I(j,i).r() = (I(j,i).r()+c.r())/2;
+                    I(j,i).g() = (I(j,i).g()+c.g())/2;
+                    I(j,i).b() = (I(j,i).b()+c.b())/2;
+                } else
+                    I(j,i) = I1.interpolate(v[0],v[1]);
+            }
+        }
+    }
+        
+    save(I,"ca-panorama.jpg",100);
+    display(I,0,0);
 }
 
 // Main function
