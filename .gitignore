@@ -2,3 +2,6 @@ Refs/
 *.exe
 *.pdf
 *.user
+*/Report
+*/Results
+*.zip
