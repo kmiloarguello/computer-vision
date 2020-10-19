@@ -1,7 +1,8 @@
 // Imagine++ project
 // Project:  Fundamental
 // Author:   Pascal Monasse
-// Date:     2013/10/08
+// Edited by: Camillo ARGUELLO
+// Date:     2013/10/08 -> 2020/10
 
 #include "./Imagine/Features.h"
 #include <Imagine/Graphics.h>
@@ -55,10 +56,77 @@ FMatrix<float,3,3> computeF(vector<Match>& matches) {
     int Niter=100000; // Adjusted dynamically
     FMatrix<float,3,3> bestF;
     vector<int> bestInliers;
-    // --------------- TODO ------------
-    // DO NOT FORGET NORMALIZATION OF POINTS
 
+    int counter = 0;
+    vector<int> inliers;
+    int n = matches.size();
+    int m = 0; // Estimated number of inliers
+    cout << "Computing Fundamental Matrix..." << endl;
+    while (counter < Niter){
 
+        // Finding fundamental matrix
+        FMatrix<float,9,9> A(-1.);
+        float x1, y1, x2, y2;
+        for (int i = 0; i < 8; i++) {
+            Match match = matches[rand()%matches.size()];
+
+            // Normalization of 8 given points 
+            x1 = match.x1 * 10e-3; 
+            y1 = match.y1 * 10e-3;
+            x2 = match.x2 * 10e-3; 
+            y2 = match.y2 * 10e-3;
+
+            // Building the linear system
+            A(i,0) = x1 * x2;
+            A(i,1) = x1 * y2;
+            A(i,2) = x1;
+            
+            A(i,3) = y1 * x2;
+            A(i,4) = y1 * y2;
+            A(i,5) = y1;
+            
+            A(i,6) = x2;
+            A(i,7) = y2;
+            A(i,8) = 1;
+            
+            // Fill of zeros
+            A(8,i) = 0;
+        }
+        // Extra row
+        A(8,8) = 0;
+
+        // Solve linear system using svd
+        FVector<float,9> S;
+        FMatrix<float,9,9> U, V;
+
+        // Compute SVD of A
+        svd(A, U, S, V);
+
+        // Extracting F out of V
+        FMatrix<float,3,3> F;
+        for (int i = 0; i < 3; i++){
+            for (int j = 0; j < 3; j++){
+                F(i,j) = V(8,3 * j + j);
+            }
+        }
+
+        // Enforcing det(F) = 0 (Constraint of Rank)
+        FVector<float,3> Sf;
+        FMatrix<float,3,3> Uf, Vf;
+        svd(F, Uf, Sf, Vf);
+        Sf[2] = 0;
+        F = Uf * Diagonal(Sf) * transpose(Vf);
+
+        // Normalization
+        FMatrix<float,3,3> N(0.0);
+        N(0,0) = 10e-3; 
+        N(1,1) = 10e-3; 
+        N(2,2) = 1;
+        F = N * F * N;
+
+        counter++;
+    }
+    cout << "Iteration: " << counter << ", Inliers: " << inliers.size() << endl;
     // Updating matches with inliers only
     vector<Match> all=matches;
     matches.clear();
