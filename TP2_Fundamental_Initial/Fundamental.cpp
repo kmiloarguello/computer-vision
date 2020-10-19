@@ -154,7 +154,7 @@ FMatrix<float,3,3> computeF(vector<Match>& matches) {
             }
         }
 
-        if (inliers.size() > bestInliers.size()){ // More inliers than the previous best
+        if (inliers.size() > bestInliers.size()){
             bestF = F;
             bestInliers = inliers;
             Niter = (int)(log(BETA) / log(1-0.0001-pow(float( inliers.size() ) / float(n), 8)));
