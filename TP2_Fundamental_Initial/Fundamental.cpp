@@ -49,6 +49,30 @@ void algoSIFT(Image<Color,2> I1, Image<Color,2> I2,
     }
 }
 
+
+float epipolarDistance(Match m, FMatrix<float,3,3>& F) {
+    float x1, x2, y1, y2;
+
+    x1 = m.x1; 
+    y1 = m.y1;
+    x2 = m.x2; 
+    y2 = m.y2;
+    FloatPoint3 point, point1;
+    point[0]=x1;
+    point[1]=y1;
+    point[2]=1;
+
+    point1[0]=x2;
+    point1[1]=y2;
+    point1[2]=1;
+
+    point = transpose(F) * point;
+    float dist = abs(point1*point);
+    dist = dist/sqrt(point[0]*point[0]+point[1]*point[1]);
+        
+    return dist;
+}
+
 // RANSAC algorithm to compute F from point matches (8-point algorithm)
 // Parameter matches is filtered to keep only inliers as output.
 FMatrix<float,3,3> computeF(vector<Match>& matches) {
@@ -60,7 +84,6 @@ FMatrix<float,3,3> computeF(vector<Match>& matches) {
     int counter = 0;
     vector<int> inliers;
     int n = matches.size();
-    int m = 0; // Estimated number of inliers
     cout << "Computing Fundamental Matrix..." << endl;
     while (counter < Niter){
 
@@ -117,16 +140,30 @@ FMatrix<float,3,3> computeF(vector<Match>& matches) {
         Sf[2] = 0;
         F = Uf * Diagonal(Sf) * transpose(Vf);
 
-        // Normalization
+        // Normalization for F
         FMatrix<float,3,3> N(0.0);
         N(0,0) = 10e-3; 
         N(1,1) = 10e-3; 
         N(2,2) = 1;
         F = N * F * N;
 
+        // Get Epipolar Distance
+        for (int i = 0; i < matches.size(); i++){
+            if(epipolarDistance(matches[i],F) <= distMax) {
+                inliers.push_back(i);
+            }
+        }
+
+        if (inliers.size() > bestInliers.size()){ // More inliers than the previous best
+            bestF = F;
+            bestInliers = inliers;
+            Niter = (int)(log(BETA) / log(1-0.0001-pow(float( inliers.size() ) / float(n), 8)));
+        }
+
         counter++;
     }
-    cout << "Iteration: " << counter << ", Inliers: " << inliers.size() << endl;
+    cout << "Iterations: " << counter << ", Inliers: " << inliers.size() << endl;
+    
     // Updating matches with inliers only
     vector<Match> all=matches;
     matches.clear();
