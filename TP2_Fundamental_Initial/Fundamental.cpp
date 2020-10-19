@@ -49,7 +49,77 @@ void algoSIFT(Image<Color,2> I1, Image<Color,2> I2,
     }
 }
 
+/**
+ * This function computes the given matches points into the Fundamental matrix
+ * */
+FMatrix<float,3,3> computeFundamentalMatrix(vector<Match>& matches){
 
+    // Finding fundamental matrix
+    FMatrix<float,9,9> A(-1.);
+    float x1, y1, x2, y2;
+    for (int i = 0; i < 8; i++) {
+        Match match = matches[rand()%matches.size()];
+
+        // Normalization of 8 given points 
+        x1 = match.x1 * 10e-3; 
+        y1 = match.y1 * 10e-3;
+        x2 = match.x2 * 10e-3; 
+        y2 = match.y2 * 10e-3;
+
+        // Building the linear system equation
+        A(i,0) = x1 * x2;
+        A(i,1) = x1 * y2;
+        A(i,2) = x1;
+        
+        A(i,3) = y1 * x2;
+        A(i,4) = y1 * y2;
+        A(i,5) = y1;
+        
+        A(i,6) = x2;
+        A(i,7) = y2;
+        A(i,8) = 1;
+        
+        // Fill of zeros
+        A(8,i) = 0;
+    }
+    // Extra row
+    A(8,8) = 0;
+
+    // Solve linear system using svd
+    FVector<float,9> S;
+    FMatrix<float,9,9> U, V;
+
+    // Compute SVD of A
+    svd(A, U, S, V);
+
+    // Extracting F out of V
+    FMatrix<float,3,3> F;
+    for (int i = 0; i < 3; i++){
+        for (int j = 0; j < 3; j++){
+            F(i,j) = V(8,3 * i + j);
+        }
+    }
+
+    // Enforcing det(F) = 0 (Constraint of Rank)
+    FVector<float,3> Sf;
+    FMatrix<float,3,3> Uf, Vf;
+    svd(F, Uf, Sf, Vf);
+    Sf[2] = 0;
+    F = Uf * Diagonal(Sf) * Vf;
+
+    // Normalization for F
+    FMatrix<float,3,3> N(0.0);
+    N(0,0) = 10e-3; 
+    N(1,1) = 10e-3; 
+    N(2,2) = 1;
+    F = N * F * N; 
+
+    return F;
+}
+
+/**
+ * This function calculates the epipolar Distance given a match point and the Fundamental Matrix
+ * */
 float epipolarDistance(Match m, FMatrix<float,3,3>& F) {
     float x1, x2, y1, y2;
 
@@ -76,6 +146,7 @@ float epipolarDistance(Match m, FMatrix<float,3,3>& F) {
 // RANSAC algorithm to compute F from point matches (8-point algorithm)
 // Parameter matches is filtered to keep only inliers as output.
 FMatrix<float,3,3> computeF(vector<Match>& matches) {
+
     const float distMax = 1.5f; // Pixel error for inlier/outlier discrimination
     int Niter=100000; // Adjusted dynamically
     FMatrix<float,3,3> bestF;
@@ -87,65 +158,7 @@ FMatrix<float,3,3> computeF(vector<Match>& matches) {
     cout << "Computing Fundamental Matrix..." << endl;
     while (counter < Niter){
 
-        // Finding fundamental matrix
-        FMatrix<float,9,9> A(-1.);
-        float x1, y1, x2, y2;
-        for (int i = 0; i < 8; i++) {
-            Match match = matches[rand()%matches.size()];
-
-            // Normalization of 8 given points 
-            x1 = match.x1 * 10e-3; 
-            y1 = match.y1 * 10e-3;
-            x2 = match.x2 * 10e-3; 
-            y2 = match.y2 * 10e-3;
-
-            // Building the linear system equation
-            A(i,0) = x1 * x2;
-            A(i,1) = x1 * y2;
-            A(i,2) = x1;
-            
-            A(i,3) = y1 * x2;
-            A(i,4) = y1 * y2;
-            A(i,5) = y1;
-            
-            A(i,6) = x2;
-            A(i,7) = y2;
-            A(i,8) = 1;
-            
-            // Fill of zeros
-            A(8,i) = 0;
-        }
-        // Extra row
-        A(8,8) = 0;
-
-        // Solve linear system using svd
-        FVector<float,9> S;
-        FMatrix<float,9,9> U, V;
-
-        // Compute SVD of A
-        svd(A, U, S, V);
-
-        // Extracting F out of V
-        FMatrix<float,3,3> F;
-        for (int i = 0; i < 3; i++){
-            for (int j = 0; j < 3; j++){
-                F(i,j) = V(8,3 * i + j);
-            }
-        }
-
-        // Enforcing det(F) = 0 (Constraint of Rank)
-        FVector<float,3> Sf;
-        FMatrix<float,3,3> Uf, Vf;
-        svd(F, Uf, Sf, Vf);
-        Sf[2] = 0;
-        F = Uf * Diagonal(Sf) * Vf;
-
-        // Normalization for F
-        FMatrix<float,3,3> N(0.0);
-        N(0,0) = 10e-3; 
-        N(1,1) = 10e-3; 
-        N(2,2) = 1;
-        F = N * F * N;
+        FMatrix<float,3,3> F = computeFundamentalMatrix(matches);
 
         // Get Epipolar Distance
         for (int i = 0; i < matches.size(); i++){
