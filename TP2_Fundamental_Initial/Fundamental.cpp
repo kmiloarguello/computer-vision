@@ -67,8 +67,8 @@ float epipolarDistance(Match m, FMatrix<float,3,3>& F) {
     point1[2]=1;
 
     point = transpose(F) * point;
-    float dist = abs(point1*point);
-    dist = dist/sqrt(point[0]*point[0]+point[1]*point[1]);
+    float dist = abs(point1 * point);
+    dist = dist / sqrt(point[0] * point[0] + point[1] * point[1]);
         
     return dist;
 }
@@ -99,7 +99,7 @@ FMatrix<float,3,3> computeF(vector<Match>& matches) {
             x2 = match.x2 * 10e-3; 
             y2 = match.y2 * 10e-3;
 
-            // Building the linear system
+            // Building the linear system equation
             A(i,0) = x1 * x2;
             A(i,1) = x1 * y2;
             A(i,2) = x1;
@@ -138,7 +138,7 @@ FMatrix<float,3,3> computeF(vector<Match>& matches) {
         FMatrix<float,3,3> Uf, Vf;
         svd(F, Uf, Sf, Vf);
         Sf[2] = 0;
-        F = Uf * Diagonal(Sf) * transpose(Vf);
+        F = Uf * Diagonal(Sf) * Vf;
 
         // Normalization for F
         FMatrix<float,3,3> N(0.0);
@@ -149,7 +149,9 @@ FMatrix<float,3,3> computeF(vector<Match>& matches) {
 
         // Get Epipolar Distance
         for (int i = 0; i < matches.size(); i++){
+            
             if(epipolarDistance(matches[i],F) <= distMax) {
+                cout << "the distance is " << epipolarDistance(matches[i],F) << endl;
                 inliers.push_back(i);
             }
         }
@@ -162,6 +164,7 @@ FMatrix<float,3,3> computeF(vector<Match>& matches) {
 
         counter++;
     }
+
     cout << "Iterations: " << counter << ", Inliers: " << inliers.size() << endl;
     
     // Updating matches with inliers only
@@ -169,6 +172,8 @@ FMatrix<float,3,3> computeF(vector<Match>& matches) {
     matches.clear();
     for(size_t i=0; i<bestInliers.size(); i++)
         matches.push_back(all[bestInliers[i]]);
+
+    cout << "The Fundamental Matrix was successfully calculated." << endl;
     return bestF;
 }
 
@@ -208,7 +213,7 @@ void displayEpipolar(Image<Color> I1, Image<Color> I2,
                 rightPoint[1] = (int) (-(v[2] + v[0] * image1) / v[1]);
             } else {
             // RIGHT IMAGE SCREEN
-                v[0] = x - w1;
+                v[0] = x - image1;
                 v = F * v;
                 v /= v[2];
                 leftPoint[0] = 0;
