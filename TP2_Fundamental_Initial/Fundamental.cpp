@@ -129,7 +129,7 @@ FMatrix<float,3,3> computeF(vector<Match>& matches) {
         FMatrix<float,3,3> F;
         for (int i = 0; i < 3; i++){
             for (int j = 0; j < 3; j++){
-                F(i,j) = V(8,3 * j + j);
+                F(i,j) = V(8,3 * i + j);
             }
         }
 
@@ -149,7 +149,6 @@ FMatrix<float,3,3> computeF(vector<Match>& matches) {
 
         // Get Epipolar Distance
         for (int i = 0; i < matches.size(); i++){
-            
             if(epipolarDistance(matches[i],F) <= distMax) {
                 cout << "the distance is " << epipolarDistance(matches[i],F) << endl;
                 inliers.push_back(i);
@@ -159,7 +158,7 @@ FMatrix<float,3,3> computeF(vector<Match>& matches) {
         if (inliers.size() > bestInliers.size()){
             bestF = F;
             bestInliers = inliers;
-            Niter = (int)(log(BETA) / log(1-0.0001-pow(float( inliers.size() ) / float(n), 8)));
+            Niter = (int)(log(BETA) / log(1-(10e-3)-pow(float( inliers.size() ) / float(n), 8)));
         }
 
         counter++;
