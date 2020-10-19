@@ -176,11 +176,50 @@ FMatrix<float,3,3> computeF(vector<Match>& matches) {
 // Stop at right-click.
 void displayEpipolar(Image<Color> I1, Image<Color> I2,
                      const FMatrix<float,3,3>& F) {
+    cout << "Click to select a point." << endl;
+
+    int image1 = I1.width();
+    int image2 = I2.width();
+
     while(true) {
         int x,y;
+        
         if(getMouse(x,y) == 3)
             break;
-        // --------------- TODO ------------
+
+        if(getMouse(x,y) == 1) {
+            IntPoint2 p0(x,y);
+            drawCircle(p0, 4, GREEN, 2);
+            
+            DoublePoint3 p1, p2;
+            FVector<float, 3> v;
+            v[1] = y;
+            v[2] = 1;
+            IntPoint2 leftPoint, rightPoint;
+            
+            // LEFT IMAGE SCREEN
+            if (x < image1) {
+                v[0] = x;
+                v = transpose(F) * v;
+                v /= v[2];
+                leftPoint[0] = image1;
+                leftPoint[1] = (int) (-v[2] / v[1]);
+                rightPoint[0] = image1 + image2;
+                rightPoint[1] = (int) (-(v[2] + v[0] * image1) / v[1]);
+            } else {
+            // RIGHT IMAGE SCREEN
+                v[0] = x - w1;
+                v = F * v;
+                v /= v[2];
+                leftPoint[0] = 0;
+                leftPoint[1] = -v[2] / v[1];
+                rightPoint[0] = image1;
+                rightPoint[1] = (int) (-(v[2] + v[0] * image1) / v[1]);
+
+            }
+            cout << "vector v=" << v << endl;
+            drawLine(leftPoint, rightPoint, RED, 2);
+        }
     }
 }
 
