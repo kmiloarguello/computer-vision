@@ -104,7 +104,12 @@ static float correl(const Image<byte>& im1, int i1,int j1,float m1,
 static float sum(const Image<byte>& im, int i, int j)
 {
     float s=0.0f;
-    // ------------- TODO -------------
+    for (int px = i - win; px <= i + win && px < im.width(); px++) {
+        for (int py = j - win; py <= j + win && py < im.height(); py++) {
+            s += im(px, py);
+        }
+    }
+        
     return s;
 }
 
@@ -137,6 +142,9 @@ static void find_seeds(Image<byte> im1, Image<byte> im2,
         for(int x=win; x+win<im1.width(); x++) {
             // ------------- TODO -------------
             // Hint: just ignore windows that are not fully in image
+
+
+
         }
     }
     std::cout << std::endl;
