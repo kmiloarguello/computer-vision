@@ -1,6 +1,8 @@
 // Imagine++ project
 // Project:  Seeds
 // Author:   Pascal Monasse
+// Edited by: Camillo ARGUELLO
+// Date:     2013/10/08 -> 2020/10
 
 #include <Imagine/Graphics.h>
 #include <Imagine/Images.h>
@@ -150,7 +152,7 @@ static void propagate(Image<byte> im1, Image<byte> im2,
         for(int i=0; i<4; i++) {
             float x=s.x+dx[i], y=s.y+dy[i];
             if(0<=x-win && 0<=y-win &&
-               x+win<im2.width() && y+win<im2.height() &&
+                x+win<im2.width() && y+win<im2.height() &&
                ! seeds(x,y)) {
                 // ------------- TODO -------------
             }
@@ -162,8 +164,8 @@ int main()
 {
     // Load and display images
     Image<Color> I1, I2;
-    if( ! load(I1, srcPath("im1.jpg")) ||
-        ! load(I2, srcPath("im2.jpg")) ) {
+    if( ! load(I1, srcPath("im1_s.jpg")) ||
+        ! load(I2, srcPath("im2_s.jpg")) ) {
         cerr<< "Unable to load images" << endl;
         return 1;
     }
