@@ -96,7 +96,31 @@ static float correl(const Image<byte>& im1, int i1,int j1,float m1,
                     const Image<byte>& im2, int i2,int j2,float m2)
 {
     float dist=0.0f;
-    // ------------- TODO -------------
+
+    for(int i = -win; i < 1+win; i++) {
+        for(int j = -win; j < 1+win; j++) {
+	        float v1 = im1(i1+i,j1+j);
+	        float v2 = im2(i2+i,j2+j);
+
+            v1 -= m1;
+            v2 -= m2;
+
+	        dist += v1*v2;
+        }
+    }
+    
+    float s1 = 0.0f;
+    float s2 = 0.0f;
+    
+    for(int i = -win; i < 1+win ; i++){
+        for(int j = -win; j < 1+ win; j++){
+            s1 += ((im1(i1+i,j1+j) - m1)*(im1(i1+i,j1+j) - m1));
+            s2 += ((im2(i2+i,j2+j) - m2)*(im2(i2+i,j2+j) - m2));
+        }
+    }
+
+    dist /= (sqrt(s1)*sqrt(s2));
+    
     return dist;
 }
 
