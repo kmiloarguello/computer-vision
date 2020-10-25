@@ -180,7 +180,7 @@ static void find_seeds(Image<byte> im1, Image<byte> im2,
                 
                 // Only for highest ncc values
                 if (ncc >= nccSeed && ncc >= bestNcc) {
-                    disp(x, y) = d;
+                    disp(x, y) = dx;
                     seeds(x, y) = true;
                     bestNcc = ncc;
                 }
@@ -201,10 +201,29 @@ static void propagate(Image<byte> im1, Image<byte> im2,
         Q.pop();
         for(int i=0; i<4; i++) {
             float x=s.x+dx[i], y=s.y+dy[i];
-            if(0<=x-win && 0<=y-win &&
-                x+win<im2.width() && y+win<im2.height() &&
-               ! seeds(x,y)) {
-                // ------------- TODO -------------
+
+            if( 0<=x-win && 
+                0<=y-win &&
+                x+win<im2.width() && 
+                y+win<im2.height() &&
+                !seeds(x,y)) {
+                    float maxNcc = -2.f;
+                    int bestIdx = 0;
+                    for (int dx = -1; dx <= 1; dx++) {
+                        float ncc = ccorrel(im1, x, y, im2, x + disp(s.x, s.y) + dx, y);
+                        
+                        if (    ncc >= maxNcc && 
+                                disp(s.x, s.y) + dx >= dMin && 
+                                disp(s.x, s.y) + dx <= dMax ) {
+
+                            maxNcc = ncc;
+                            bestIdx = dx;
+                        }
+                    }
+                    
+                    disp(x, y) = disp(s.x, s.y) + bestIdx;
+                    seeds(x, y) = true;
+                    Q.push(Seed(x, y, disp(x, y), maxNcc));
             }
         }
     }
@@ -214,8 +233,15 @@ int main()
 {
     // Load and display images
     Image<Color> I1, I2;
-    if( ! load(I1, srcPath("im1_s.jpg")) ||
+    // DEBUG MODE
+    /*if( ! load(I1, srcPath("im1_s.jpg")) ||
         ! load(I2, srcPath("im2_s.jpg")) ) {
+        cerr<< "Unable to load images" << endl;
+        return 1;
+    }*/
+    // RELEASE
+    if( ! load(I1, srcPath("im1.jpg")) ||
+        ! load(I2, srcPath("im2.jpg")) ) {
         cerr<< "Unable to load images" << endl;
         return 1;
     }
