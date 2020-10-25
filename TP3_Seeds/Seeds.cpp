@@ -158,7 +158,7 @@ static void find_seeds(Image<byte> im1, Image<byte> im2,
     while(! Q.empty())
         Q.pop();
 
-    std::cout << "Disparity map: Image 1 -> Image 2, please wait ..." << std::endl;
+    std::cout << "Disparity map. please wait ..." << std::flush;
 
     const int maxy = std::min(im1.height(),im2.height());
     const int refreshStep = (maxy-2*win)*5/100;
@@ -179,7 +179,7 @@ static void find_seeds(Image<byte> im1, Image<byte> im2,
                 ncc = ccorrel(im1, x, y, im2, x + dx, y);
                 
                 // Only for highest ncc values
-                if (ncc >= nccSeed && ncc >= bestNcc) {
+                if ( ncc >= bestNcc) {
                     disp(x, y) = dx;
                     seeds(x, y) = true;
                     bestNcc = ncc;
@@ -220,7 +220,7 @@ static void propagate(Image<byte> im1, Image<byte> im2,
                             bestIdx = dx;
                         }
                     }
-                    
+
                     disp(x, y) = disp(s.x, s.y) + bestIdx;
                     seeds(x, y) = true;
                     Q.push(Seed(x, y, disp(x, y), maxNcc));
