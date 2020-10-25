@@ -6,3 +6,4 @@ Refs/
 */Results
 *.zip
 .vscode/
+*/Release/
