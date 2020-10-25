@@ -134,15 +134,33 @@ static void find_seeds(Image<byte> im1, Image<byte> im2,
     while(! Q.empty())
         Q.pop();
 
+    std::cout << "Disparity map: Image 1 -> Image 2, please wait ..." << std::endl;
+
     const int maxy = std::min(im1.height(),im2.height());
     const int refreshStep = (maxy-2*win)*5/100;
     for(int y=win; y+win<maxy; y++) {
         if((y-win-1)/refreshStep != (y-win)/refreshStep)
             std::cout << "Seeds: " << 5*(y-win)/refreshStep <<"%\r"<<std::flush;
         for(int x=win; x+win<im1.width(); x++) {
-            // ------------- TODO -------------
-            // Hint: just ignore windows that are not fully in image
+            float bestNcc = -2.0f;
+            float ncc;
 
+            for (int dx = dMin; dx <= dMax; dx++) {
+                // For patches inside of the image only
+                if ((x + dx) < win){
+                    continue;
+                }
+
+                // Normalized Cross-Correlation
+                ncc = ccorrel(im1, x, y, im2, x + dx, y);
+                
+                // Only for highest ncc values
+                if (ncc >= nccSeed && ncc >= bestNcc) {
+                    disp(x, y) = d;
+                    seeds(x, y) = true;
+                    bestNcc = ncc;
+                }
+            }
 
 
         }
